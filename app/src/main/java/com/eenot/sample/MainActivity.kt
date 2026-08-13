@@ -110,7 +110,8 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url.toString()
                 // внутри
-                val trustedHosts = listOf("localhost", "10.0.2.2", "95.153.88.229", "ee-apps.github.io", "127.0.0.1", "192.168.100.18")
+                val trustedHosts = settingsJson.getJSONArray("trusted_hosts")
+                    .let { arr -> (0 until arr.length()).map { arr.getString(it) } }
 
                 if (trustedHosts.any { url.contains(it) } || url.startsWith("file://")) {
                     return false // Грузим внутри WebView

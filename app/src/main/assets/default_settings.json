@@ -5,6 +5,14 @@
     "https://ee-apps.github.io/ee-framework/bank",
     "file:///android_asset/blank.html"
   ],
+  "trusted_hosts": [
+    "localhost",
+    "10.0.2.2",
+    "95.153.88.229",
+    "ee-apps.github.io",
+    "127.0.0.1",
+    "192.168.100.18"
+  ],
   "settings": {
     "allow_cors": true,
     "theme": "dark",

@@ -24,4 +24,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "EE Sample"
 include(":app")
- 
+
+
+include(":core")
+include(":app-calculator")
+include(":app-weather")
+include(":app-texteditor")
+include(":app-presentation")
+include(":app-clock")
+include(":core")
