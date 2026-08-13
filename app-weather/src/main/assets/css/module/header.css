@@ -1,0 +1,39 @@
+#home .page-header {
+    height: max(400px, 40dvh);
+    min-height: max(400px, 40dvh);
+    position: relative;
+    
+    h1, h3 {
+        z-index: 25;
+    }
+
+    .temperature_apparent {
+        font-size: 1.5rem;
+        color: #d0d0d0;
+        margin-top: var(--dss);
+    }
+
+    .temperature_exact {
+        margin-left: var(--ds);
+    }
+
+    #blacker {
+        position: absolute;
+        z-index: 0;
+        background-color: #00000050;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+#wenow {
+    position: absolute;
+    bottom: var(--ds);
+    left: var(--ds);
+    z-index: 10;
+
+    img {
+        width: 25px;
+        height: 25px;
+    }
+}

@@ -1,7 +1,7 @@
 package com.eenot.sample
 
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +15,7 @@ import android.webkit.WebResourceRequest
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ import java.io.File
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private var settingsJson: JSONObject = JSONObject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
         webView.settings.apply {
             javaScriptEnabled = true
@@ -84,7 +87,9 @@ class MainActivity : AppCompatActivity() {
             // Доступ к локальным файлам и обход CORS
             allowFileAccess = true
             allowContentAccess = true
+            @Suppress("DEPRECATION")
             allowUniversalAccessFromFileURLs = true
+            @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = true
 
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
@@ -110,20 +115,22 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url.toString()
                 // внутри
-                val trustedHosts = settingsJson.getJSONArray("trusted_hosts")
-                    .let { arr -> (0 until arr.length()).map { arr.getString(it) } }
+                val trustedHosts = settingsJson.optJSONArray("trusted_hosts")
+                    ?.let { arr -> (0 until arr.length()).map { arr.getString(it) } }
+                    ?: emptyList()
 
                 if (trustedHosts.any { url.contains(it) } || url.startsWith("file://")) {
                     return false // Грузим внутри WebView
                 }
 
                 // перенаправление внешних ссылок
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                 startActivity(intent)
                 return true
             }
 
             // плевать на самописные сертификаты
+            @SuppressLint("WebViewClientOnReceivedSslError")
             override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
                 handler.proceed()
             }
@@ -166,6 +173,7 @@ class MainActivity : AppCompatActivity() {
                 Log.w("LoadUrl", "Файл settings.json не найден, используем defaults")
                 JSONObject()
             }
+            this@MainActivity.settingsJson = settingsJson
 
             val urls = mutableListOf<String>()
             if (settingsJson.has("urls")) {

@@ -1,0 +1,179 @@
+body, html {
+    height: 100%;
+	width: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-family: 'Malgun Gothic', sans-serif;
+    background: #1e1e1e;
+    box-sizing: border-box; /* Включаем padding в общую ширину/высоту */
+    padding-end: 20px; /* Отступ снизу */
+    padding-left: 20px; /* Отступ слева */
+    padding-right: 20px; /* Отступ справа */
+}
+
+.hide {
+    display: none;
+    visibility: hidden;
+}
+
+.container {
+    border-radius: 20px;
+    background-color: #2e2e2e;
+	max-width: 500px;
+    max-width: 100% - 40px;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.div-now {
+    width: 100%;
+    max-width: 500px;
+    height: width;
+    max-height: 350px;
+    aspect-ratio: 1;
+    position: relative;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding: 20px;
+    gap: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+    .div-now::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        filter: blur(3px);
+        z-index: 0;
+    }
+
+    .div-now > * {
+        position: relative;
+        z-index: 1;
+    }
+
+.weather-sun::before {
+    background-image: url('back/sun.png'); /* Ваша картинка для фона */
+}
+
+.weather-cloudy::before {
+    background-image: url('back/cloudy.png'); /* Ваша картинка для фона */
+}
+
+.weather-rain::before {
+    background-image: url('back/rain.png'); /* Ваша картинка для фона */
+}
+
+.weather-snow::before {
+    background-image: url('back/snow.png'); /* Ваша картинка для фона */
+}
+
+.div-detalis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1; /* Занимает всё оставшееся пространство */
+    overflow: hidden; /* Для защиты от переполнения */
+}
+
+.detalis {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detalis-ico {
+    width: 30px;
+    height: 30px;
+}
+
+.temperature {
+    font-size: clamp(50px, 10vw, 150px); /* Подстраиваем шрифт под размер контейнера */
+    line-height: 1; /* Убираем лишние отступы */
+    margin: 0;
+    word-wrap: break-word; /* Перенос текста, если он слишком длинный */
+}
+
+.scroll-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px; /* Отступы между карточками */
+    overflow-x: auto; /* Горизонтальная прокрутка */
+    padding: 10px; /* Отступы внутри контейнера */
+    scroll-snap-type: x mandatory; /* Удобная прокрутка для карточек */
+}
+
+/* Для современных браузеров */
+.scroll-container {
+    scrollbar-width: thin; /* Тонкая полоса прокрутки */
+    scrollbar-color: #4e4e4e #2e2e2e; /* Цвет ползунка и фона */
+}
+
+    .scroll-container::-webkit-scrollbar {
+        width: 8px; /* Ширина вертикальной полосы */
+        height: 8px; /* Высота горизонтальной полосы */
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background: #2e2e2e; /* Фон полосы прокрутки */
+        border-radius: 10px; /* Скругление фона */
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: #4e4e4e; /* Ползунок */
+        border-radius: 10px; /* Скругление ползунка */
+        border: 2px solid #2e2e2e; /* Пространство между ползунком и фоном */
+    }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #6e6e6e; /* Цвет ползунка при наведении */
+        }
+
+
+.card {
+    flex: 0 0 75px; /* Фиксированная ширина 75px, карточки не сжимаются */
+    height: 120px; /* Фиксированная высота */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #4e4e4e;
+    border-radius: 20px;
+    scroll-snap-align: start; /* Карточки выравниваются в начале при прокрутке */
+    box-sizing: border-box; /* Включаем padding в размер карточки */
+}
+
+    .card:hover {
+        background-color: #5e5e5e;
+        transform: scale(1.05);
+    }
+
+.c-time, .c-temp {
+    margin: 5px 0;
+    font-size: 14px;
+    text-align: center;
+
+    &.c-time-day {
+        margin-top: 0;
+    }
+}
+
+.c-img {
+    height: 50px;
+}

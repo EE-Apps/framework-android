@@ -1,0 +1,18 @@
+.weather-rain {
+    background-image: url(../ico/rain.jpg);
+}
+.weather-cloudy {
+    background-image: url(../ico/cloud.jpg);
+}
+.weather-sun {
+    background-image: url(../ico/clear.jpg);
+}
+.weather-snow {
+    background-image: url(../ico/snow.jpg);
+}
+.weather-fog {
+    background-image: url(../ico/fog.jpg);
+}
+.weather-thunderstorm {
+    background-image: url(../ico/thunderstorm.jpg);
+}

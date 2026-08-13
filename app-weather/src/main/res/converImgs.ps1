@@ -1,0 +1,2 @@
+Get-ChildItem -Filter *.png -Recurse | ForEach-Object { & "C:\Users\eenot\Documents\GitHub\eeditor-ws-data\lib\cwebp.exe" -q 80 $_.FullName -o ($_.FullName -replace '\.png$', '.webp') }
+Get-ChildItem -Filter *.jpg -Recurse | ForEach-Object { & "C:\Users\eenot\Documents\GitHub\eeditor-ws-data\lib\cwebp.exe" -q 80 $_.FullName -o ($_.FullName -replace '\.jpg$', '.webp') }

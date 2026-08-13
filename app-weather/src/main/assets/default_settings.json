@@ -1,0 +1,21 @@
+{
+  "urls": [
+    "http://192.168.100.18:5500/",
+    "http://95.153.88.229:8080/ee-apps/web/weather/",
+    "https://ee-apps.github.io/web/weather/",
+    "file:///android_asset/index.html"
+  ],
+  "trusted_hosts": [
+    "localhost",
+    "10.0.2.2",
+    "95.153.88.229",
+    "ee-apps.github.io",
+    "127.0.0.1",
+    "192.168.100.18"
+  ],
+  "settings": {
+    "allow_cors": true,
+    "theme": "dark",
+    "enable_feature_x": false
+  }
+}

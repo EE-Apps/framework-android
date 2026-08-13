@@ -1,0 +1,58 @@
+.twocards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds);
+}
+
+.detalis_card {
+    width: calc(100% - var(--ds2));
+    height: calc(100% - var(--ds2));
+    padding: var(--ds);
+
+    border-radius: var(--br);
+    background-color: var(--bg-sec-great);
+
+    display: flex;
+    flex-direction: row;
+    gap: var(--ds);
+
+    img {
+        width: 50px;
+        height: 50px;
+
+        &:not(.nr) {
+            filter: invert();
+        }
+    }
+
+    .card_text {
+        max-height: max-content;
+
+        b, p {
+            margin: var(--dss) 0;
+        }
+    }
+
+    #sunday_text {
+        display: flex;
+        flex-direction: column;
+
+        .sundayarc {
+            width: calc(100% - 50px);
+            padding: 0 25px;
+        }
+        #sunday2 {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+
+            img {
+                filter: none;
+            }
+
+            #sunday_start, #sunday_end {
+                text-align: center;
+            }
+        }
+    }
+}
