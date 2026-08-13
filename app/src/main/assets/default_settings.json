@@ -1,0 +1,13 @@
+{
+  "urls": [
+    "http://192.168.100.18:5500/blank.html",
+    "http://95.153.88.229:8080/ee-framework/blank.html",
+    "https://ee-apps.github.io/ee-framework/bank",
+    "file:///android_asset/blank.html"
+  ],
+  "settings": {
+    "allow_cors": true,
+    "theme": "dark",
+    "enable_feature_x": false
+  }
+}

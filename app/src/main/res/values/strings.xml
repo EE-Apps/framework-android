@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">EE Sample</string>
+
+    <string-array name="default_urls">
+        <item>file:///android_asset/index.html</item>
+    </string-array>
+</resources>

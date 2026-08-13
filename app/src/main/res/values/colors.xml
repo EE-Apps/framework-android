@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_accent_40">#286e9b</color>
+    <color name="secondary_accent_40">#31576F</color>
+    <color name="primary_40">#242424</color>
+    <color name="primary_light_40">#242424</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
