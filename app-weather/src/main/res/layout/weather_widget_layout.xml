@@ -41,7 +41,7 @@
                 android:id="@+id/cityCompact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Москва"
+                android:text="Киев"
                 android:textColor="#E0E0E0"
                 android:textSize="12sp"
                 android:maxLines="1"
@@ -100,7 +100,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="Москва"
+            android:text="Киев"
             android:textColor="#E0E0E0"
             android:textSize="14sp" />
     </RelativeLayout>
@@ -143,7 +143,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Москва"
+                android:text="Киев"
                 android:textColor="#E0E0E0"
                 android:textSize="14sp" />
 
@@ -193,7 +193,7 @@
                 android:id="@+id/tempWide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/iconWide"
+                android:layout_above="@id/descWide"
                 android:layout_marginTop="4dp"
                 android:text="22°"
                 android:textColor="#FFFFFF"
@@ -204,7 +204,7 @@
                 android:id="@+id/descWide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/tempWide"
+                android:layout_above="@id/detailsWide"
                 android:layout_marginTop="2dp"
                 android:text="Переменная облачность"
                 android:textColor="#E0E0E0"
@@ -214,7 +214,7 @@
                 android:id="@+id/detailsWide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/descWide"
+                android:layout_above="@id/cityWide"
                 android:layout_marginTop="2dp"
                 android:text="💧 45%  💨 5 км/ч"
                 android:textColor="#B0B0B0"
@@ -225,7 +225,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:text="Москва"
+                android:text="Киев"
                 android:textColor="#E0E0E0"
                 android:textSize="12sp" />
         </RelativeLayout>
@@ -239,13 +239,13 @@
             android:background="#40FFFFFF" />
 
         <!-- Правая половина: прогноз -->
-        <!-- ListView
+        <ListView
             android:id="@+id/forecastList"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:divider="@android:color/transparent"
-            android:dividerHeight="4dp" / -->
+            android:dividerHeight="4dp" />
     </LinearLayout>
 
 </FrameLayout>

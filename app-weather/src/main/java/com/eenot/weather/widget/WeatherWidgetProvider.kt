@@ -157,20 +157,13 @@ class WeatherWidgetProvider : AppWidgetProvider() {
         )
 
         // Подключаем список прогноза для широкого режима
-        // val forecastIntent = Intent(context, WeatherForecastService::class.java)
-        // views.setRemoteAdapter(R.id.forecastList, forecastIntent)
+        val forecastIntent = Intent(context, WeatherForecastService::class.java)
+        views.setRemoteAdapter(R.id.forecastList, forecastIntent)
     }
 
     private fun showCorrectLayout(views: RemoteViews, options: android.os.Bundle) {
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
-        val maxWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
-        val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
-
-        // Определяем соотношение сторон и размер
-        val isWide = maxWidth >= 250 && minHeight <= 150
-        val isTall = minWidth <= 150 && maxHeight >= 200
-        val isSquare = !isWide && !isTall
 
         // Скрываем все, показываем нужный
         views.setViewVisibility(R.id.layoutCompact, android.view.View.GONE)
@@ -179,10 +172,22 @@ class WeatherWidgetProvider : AppWidgetProvider() {
         views.setViewVisibility(R.id.layoutWide, android.view.View.GONE)
 
         when {
-            isWide && minHeight >= 100 -> views.setViewVisibility(R.id.layoutWide, android.view.View.VISIBLE)
-            isTall -> views.setViewVisibility(R.id.layoutTall, android.view.View.VISIBLE)
-            isSquare -> views.setViewVisibility(R.id.layoutSquare, android.view.View.VISIBLE)
-            else -> views.setViewVisibility(R.id.layoutCompact, android.view.View.VISIBLE)
+            // Широкий режим с прогнозом: ширина >= 4 ячеек (~250dp) И высота >= 2 ячеек (~100dp)
+            minWidth >= 250 && minHeight >= 100 -> {
+                views.setViewVisibility(R.id.layoutWide, android.view.View.VISIBLE)
+            }
+            // Узкий высокий режим: ширина < 3 ячеек (~180dp) И высота >= 3 ячеек (~180dp)
+            minWidth < 180 && minHeight >= 180 -> {
+                views.setViewVisibility(R.id.layoutTall, android.view.View.VISIBLE)
+            }
+            // Квадратный режим (2x2, 3x3): ширина >= 2 ячеек (~110dp) И высота >= 2 ячеек (~100dp)
+            minWidth >= 110 && minHeight >= 100 -> {
+                views.setViewVisibility(R.id.layoutSquare, android.view.View.VISIBLE)
+            }
+            // Все остальное (2x1, 3x1, 4x1 и т.д.) — компактный режим
+            else -> {
+                views.setViewVisibility(R.id.layoutCompact, android.view.View.VISIBLE)
+            }
         }
     }
 
