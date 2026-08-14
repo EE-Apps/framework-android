@@ -1,5 +1,8 @@
 package com.eenot.weather
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.compose.setContent
@@ -9,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.eenot.core.BaseWebViewActivity
 import com.eenot.weather.ui.theme.WeatherKtTheme
+import com.eenot.weather.widget.WeatherWidgetProvider
 
 class WeatherMainActivity : BaseWebViewActivity() {
 
@@ -31,6 +35,26 @@ class WeatherMainActivity : BaseWebViewActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        triggerWidgetUpdate()
+    }
+
+    private fun triggerWidgetUpdate() {
+        val intent = Intent(this, WeatherWidgetProvider::class.java).apply {
+            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            val ids = AppWidgetManager.getInstance(applicationContext)
+                .getAppWidgetIds(
+                    ComponentName(
+                        applicationContext,
+                        WeatherWidgetProvider::class.java
+                    )
+                )
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        }
+        sendBroadcast(intent)
     }
 
     // Какие домены открывать внутри WebView

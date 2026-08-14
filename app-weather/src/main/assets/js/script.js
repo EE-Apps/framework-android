@@ -3,149 +3,149 @@ let globalLon = null;
 
 const weatherTypes = {
     0: {
-        ico: "ico/gg/sunny.png",
-        ico_night: "ico/gg/clear_night.png",
+        ico: "ico/gg/sunny.webp",
+        ico_night: "ico/gg/clear_night.webp",
         en: "Clear sky",
         ru: "Ясно",
     },
     1: {
-        ico: "ico/gg/mostly_sunny.png",
-        ico_night: "ico/gg/mostly_clear_night.png",
+        ico: "ico/gg/mostly_sunny.webp",
+        ico_night: "ico/gg/mostly_clear_night.webp",
         en: "Mainly clear",
         ru: "Преимущественно солнечно",
     },
     2: {
-        ico: "ico/gg/partly_cloudy.png",
-        ico_night: "ico/gg/partly_cloudy_night.png",
+        ico: "ico/gg/partly_cloudy.webp",
+        ico_night: "ico/gg/partly_cloudy_night.webp",
         en: "Partly cloudy",
         ru: "Частично облачно",
     },
     3: {
-        ico: "ico/gg/cloudy.png",
-        ico_night: "ico/gg/mostly_cloudy_night.png",
+        ico: "ico/gg/cloudy.webp",
+        ico_night: "ico/gg/mostly_cloudy_night.webp",
         en: "Overcast",
         ru: "Пасмурно",
     },
     45: {
-        ico: "ico/gg/haze_fog_dust_smoke.png",
+        ico: "ico/gg/haze_fog_dust_smoke.webp",
         en: "Fog",
         ru: "Туман",
     },
     48: {
-        ico: "ico/gg/haze_fog_dust_smoke.png",
+        ico: "ico/gg/haze_fog_dust_smoke.webp",
         en: "Fog",
         ru: "Холодный туман",
     },
     51: {
-        ico: "ico/gg/drizzle.png",
+        ico: "ico/gg/drizzle.webp",
         en: "Sunny",
         ru: "Легко моросит",
     },
     53: {
-        ico: "ico/gg/showers_rain.png",
+        ico: "ico/gg/showers_rain.webp",
         en: "Sunny",
         ru: "Умеренно моросит",
     },
     55: {
-        ico: "ico/gg/scattered_showers_day.png",
-        ico_night: "ico/gg/scattered_showers_night.png",
+        ico: "ico/gg/scattered_showers_day.webp",
+        ico_night: "ico/gg/scattered_showers_night.webp",
         en: "Sunny",
         ru: "Сильно моросит",
     },
     56: {
-        ico: "ico/gg/freezing_rain.png",
+        ico: "ico/gg/freezing_rain.webp",
         en: "Freezing rain",
         ru: "Морозный дождь",
     },
     57: {
-        ico: "ico/gg/freezing_rain.png",
+        ico: "ico/gg/freezing_rain.webp",
         en: "Heavy freezing rain",
         ru: "Сильный морозный дождь",
     },
     61: {
-        ico: "ico/gg/showers_rain.png",
+        ico: "ico/gg/showers_rain.webp",
         en: "Low rain",
         ru: "Слабый дождь",
     },
     63: {
-        ico: "ico/gg/heavy_rain.png",
+        ico: "ico/gg/heavy_rain.webp",
         en: "Moderete rain",
         ru: "Дождь",
     },
     65: {
-        ico: "ico/gg/heavy_rain.png",
+        ico: "ico/gg/heavy_rain.webp",
         en: "Heavy rain",
         ru: "Сильный дождь",
     },
     66: {
-        ico: "ico/gg/freezing_rain.png",
+        ico: "ico/gg/freezing_rain.webp",
         en: "Freezing rain",
         ru: "Морозный дождь",
     },
     67: {
-        ico: "ico/gg/freezing_rain.png",
+        ico: "ico/gg/freezing_rain.webp",
         en: "Heavy freezing rain",
         ru: "Сильный морозный дождь",
     },
     71: {
-        ico: "ico/gg/light_snow.png",
+        ico: "ico/gg/light_snow.webp",
         en: "Light snowfall",
         ru: "Лёгкий снегопад",
     },
     73: {
-        ico: "ico/gg/moderate_snow.png",
+        ico: "ico/gg/moderate_snow.webp",
         en: "Snowfall",
         ru: "Снегопад",
     },
     75: {
-        ico: "ico/gg/heavy_snow.png",
+        ico: "ico/gg/heavy_snow.webp",
         en: "Heavy snowfall",
         ru: "Сильный снегопад",
     },
     77: {
-        ico: "ico/gg/snow_showers_snow.png",
+        ico: "ico/gg/snow_showers_snow.webp",
         en: "Snow grains",
         ru: "Снежная крупа",
     },
     80: {
-        ico: "ico/gg/showers_rain.png",
+        ico: "ico/gg/showers_rain.webp",
         en: "Light rain showers",
         ru: "Лёгкий ливень",
     },
     81: {
-        ico: "ico/gg/heavy_rain_showers.png",
+        ico: "ico/gg/heavy_rain_showers.webp",
         en: "Rain showers",
         ru: "Ливень",
     },
     82: {
-        ico: "ico/gg/extreme_rain_showers.png",
+        ico: "ico/gg/extreme_rain_showers.webp",
         en: "Heavy rain showers",
         ru: "Сильный ливень",
     },
     85: {
-        ico: "ico/gg/snow_showers_snow.png",
+        ico: "ico/gg/snow_showers_snow.webp",
         en: "Snow showers",
         ru: "Метель",
     },
     86: {
-        ico: "ico/gg/snow_showers_snow.png",
+        ico: "ico/gg/snow_showers_snow.webp",
         en: "Heavy snow showers",
         ru: "Сильная метель",
     },
     95: {
-        ico: "ico/gg/isolated_scattered_tstorms_day.png",
-        ico_night: "ico/gg/isolated_scattered_tstorms_night.png",
+        ico: "ico/gg/isolated_scattered_tstorms_day.webp",
+        ico_night: "ico/gg/isolated_scattered_tstorms_night.webp",
         en: "Thunderstorm",
         ru: "Гроза",
     },
     96: {
-        ico: "ico/gg/isolated_scattered_tstorms_day.png",
-        ico_night: "ico/gg/isolated_scattered_tstorms_night.png",
+        ico: "ico/gg/isolated_scattered_tstorms_day.webp",
+        ico_night: "ico/gg/isolated_scattered_tstorms_night.webp",
         en: "Thunderstorm with slight hail",
         ru: "Гроза с небольшим градом",
     },
     99: {
-        ico: "ico/gg/strong_tstorms.png",
+        ico: "ico/gg/strong_tstorms.webp",
         en: "Thunderstorm with heavy hail",
         ru: "гроза с сильным градом",
     },
@@ -328,7 +328,7 @@ function renderImportantTimes(hourly) {
             
             const temp = Math.round(hourly.temperature_2m[matchingIndex]);
             const weatherCode = hourly.weather_code[matchingIndex];
-            const weatherIconThis = weatherIcon(weatherCode, hour < 6 || hour > 19 ? 0 : 1) || 'ico/gg/sunny.png';
+            const weatherIconThis = weatherIcon(weatherCode, hour < 6 || hour > 19 ? 0 : 1) || 'ico/gg/sunny.webp';
             
             card.innerHTML = `
                 <div class="time">${timeStr}</div>

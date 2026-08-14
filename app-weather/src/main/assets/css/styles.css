@@ -69,19 +69,19 @@ body, html {
     }
 
 .weather-sun::before {
-    background-image: url('back/sun.png'); /* Ваша картинка для фона */
+    background-image: url('back/sun.webp'); /* Ваша картинка для фона */
 }
 
 .weather-cloudy::before {
-    background-image: url('back/cloudy.png'); /* Ваша картинка для фона */
+    background-image: url('back/cloudy.webp'); /* Ваша картинка для фона */
 }
 
 .weather-rain::before {
-    background-image: url('back/rain.png'); /* Ваша картинка для фона */
+    background-image: url('back/rain.webp'); /* Ваша картинка для фона */
 }
 
 .weather-snow::before {
-    background-image: url('back/snow.png'); /* Ваша картинка для фона */
+    background-image: url('back/snow.webp'); /* Ваша картинка для фона */
 }
 
 .div-detalis {

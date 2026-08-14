@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Weather EE</string>
+    <string name="widget_description">Current weather on home screen</string>
 </resources>

@@ -9,7 +9,6 @@ android {
     defaultConfig {
         minSdk = 24
         // applicationId не нужен — это библиотека
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {

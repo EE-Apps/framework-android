@@ -1,18 +1,18 @@
 .weather-rain {
-    background-image: url(../ico/rain.jpg);
+    background-image: url(../ico/rain.webp);
 }
 .weather-cloudy {
-    background-image: url(../ico/cloud.jpg);
+    background-image: url(../ico/cloud.webp);
 }
 .weather-sun {
-    background-image: url(../ico/clear.jpg);
+    background-image: url(../ico/clear.webp);
 }
 .weather-snow {
-    background-image: url(../ico/snow.jpg);
+    background-image: url(../ico/snow.webp);
 }
 .weather-fog {
-    background-image: url(../ico/fog.jpg);
+    background-image: url(../ico/fog.webp);
 }
 .weather-thunderstorm {
-    background-image: url(../ico/thunderstorm.jpg);
+    background-image: url(../ico/thunderstorm.webp);
 }

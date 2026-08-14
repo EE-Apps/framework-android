@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather EE</title>
-    <link rel="icon" href="ico.png">
+    <link rel="icon" href="ico.webp">
     <link rel="stylesheet" href="eelibs/import.css">
     <link rel="stylesheet" href="css/neoweather.css">
     <link rel="stylesheet" href="css/scroll.css">
@@ -58,12 +58,12 @@
                                 <img src="img/arc.svg" class="nr sundayarc">
                                 <div id="sunday2">
                                     <div>
-                                        <img src="img/sunrise.png">
+                                        <img src="img/sunrise.webp">
                                         <div id="sunday_start"></div>
                                     </div>
                                     <p id="sunday_duration"></p>
                                     <div>
-                                        <img src="img/sunset.png">
+                                        <img src="img/sunset.webp">
                                         <div id="sunday_end"></div>
                                     </div>
                                 </div>
@@ -71,14 +71,14 @@
                         </div>
                     </div>
                     <div id="pressure" class="detalis_card">
-                        <img src="pressure.png">
+                        <img src="pressure.webp">
                         <div class="card_text">
                             <b>Давление</b>
                             <p id="pressure_text"></p>
                         </div>
                     </div>
                     <div id="wind" class="detalis_card">
-                        <img src="wind.png" class="wind_ico">
+                        <img src="wind.webp" class="wind_ico">
                         <div class="card_text">
                             <b>Ветер</b>
                             <p id="wind_speed"></p>
@@ -86,14 +86,14 @@
                         </div>
                     </div>
                     <div id="clouds" class="detalis_card">
-                        <img src="cloud.png">
+                        <img src="cloud.webp">
                         <div class="card_text">
                             <b>Облачность</b>
                             <p id="clouds_text"></p>
                         </div>
                     </div>
                     <div id="fallout" class="detalis_card">
-                        <img src="fallout.png" class="fallout_ico">
+                        <img src="fallout.webp" class="fallout_ico">
                         <div class="card_text">
                             <b>Осадки</b>
                             <p id="fallout_text"></p>
@@ -111,13 +111,6 @@
 <script src="eelibs/import.js" type="module"></script>
 <script src="eelibs/js/bridge.js" type="module"></script>
 <script src="eeframework.js" type="module"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const tmp = JSON.stringify(await window.bridge.getSettings())
-        document.getElementById('navcontent').textContent = tmp
-    })
-</script>
 
 <!--script src="js/scroll.js"></script-->
 <script src="js/script.js"></script>
