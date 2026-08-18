@@ -22,12 +22,12 @@ class WeatherForecastFactory(private val context: Context) : RemoteViewsService.
     override fun onCreate() {
         // Загружаем данные
         val data = WeatherDataParser.readFullWeatherFromJson(context)
-        forecast = data?.dailyForecast?.drop(1)?.take(5) ?: emptyList() // Пропускаем сегодня, берём 5 следующих дней
+        forecast = data?.getOrNull(0)?.dailyForecast?.drop(1)?.take(5) ?: emptyList() // Пропускаем сегодня, берём 5 следующих дней
     }
 
     override fun onDataSetChanged() {
         val data = WeatherDataParser.readFullWeatherFromJson(context)
-        forecast = data?.dailyForecast?.drop(1)?.take(5) ?: emptyList()
+        forecast = data?.getOrNull(0)?.dailyForecast?.drop(1)?.take(5) ?: emptyList()
     }
 
     override fun onDestroy() {}

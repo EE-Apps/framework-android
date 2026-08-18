@@ -1,4 +1,4 @@
-const scroller = document.querySelector('.cards');
+/*const scroller = document.querySelector('.cards');
 
 scroller.addEventListener('wheel', (e) => {
     if (e.deltaY !== 0) {
@@ -6,3 +6,4 @@ scroller.addEventListener('wheel', (e) => {
         scroller.scrollLeft += e.deltaY;
     }
 }, { passive: false });
+*/

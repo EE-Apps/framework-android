@@ -26,8 +26,10 @@ const kmhToMs = kmh => (kmh / 3.6).toFixed(1);
 /**
  * Использует объект current из общего ответа Open-Meteo
  */
-function NOWrenderCurrent(current, data) {
+function NOWrenderCurrent(current) {
     if (!current) return;
+
+    data = getData()
 
     if (!document.getElementById('wenow')) {
         const wenow = document.createElement('div')
@@ -105,8 +107,8 @@ function NOWrenderCurrent(current, data) {
         current.surface_pressure != null
             ? `${hPaToMm(current.surface_pressure)} ${isRuLang ? 'мм рт. ст.' : 'mmHg Art.'}`
             : "н/д";
-    sundayStartEl.textContent = `${sunriseDate.getHours()}:${sunriseDate.getMinutes()}`
-    sundayEndEl.textContent = `${sunsetDate.getHours()}:${sunriseDate.getMinutes()}`
+    sundayStartEl.textContent = `${sunriseDate.getHours().toString().padStart(2, "0")}:${sunriseDate.getMinutes().toString().padStart(2, "0")}`
+    sundayEndEl.textContent = `${sunsetDate.getHours().toString().padStart(2, "0")}:${sunriseDate.getMinutes().toString().padStart(2, "0")}`
     sundayDurationEl.textContent = `${sunsetDuration.getHours()} ч. ${sunsetDuration.getMinutes()} мин.`
 
     setBackground(backgroundWeatherIcons[current.weather_code] || "default")

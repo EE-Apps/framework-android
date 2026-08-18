@@ -72,7 +72,8 @@ class WeatherWidgetProvider : AppWidgetProvider() {
         options: android.os.Bundle
     ) {
         val views = RemoteViews(context.packageName, R.layout.weather_widget_layout)
-        val weather = WeatherDataParser.readFullWeatherFromJson(context)
+        val weatherList = WeatherDataParser.readFullWeatherFromJson(context)
+        val weather = weatherList?.getOrNull(0)
 
         if (weather != null) {
             fillAllLayouts(context, views, weather)
@@ -149,11 +150,6 @@ class WeatherWidgetProvider : AppWidgetProvider() {
         views.setTextViewText(
             R.id.detailsWide,
             "💧 ${current.humidity}%  💨 ${current.windSpeed.toInt()} км/ч"
-        )
-
-        views.setTextViewText(
-            R.id.cityWide,
-            weather.city
         )
 
         // Подключаем список прогноза для широкого режима

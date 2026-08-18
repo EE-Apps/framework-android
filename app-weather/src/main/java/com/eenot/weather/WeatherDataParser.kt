@@ -1,6 +1,7 @@
 package com.eenot.weather
 
 import android.content.Context
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
@@ -37,73 +38,81 @@ object WeatherDataParser {
     /**
      * Читает и парсит savedWeather.json с прогнозом
      */
-    fun readFullWeatherFromJson(context: Context): FullWeatherData? {
+    fun readFullWeatherFromJson(context: Context): List<FullWeatherData>? {
         return try {
             val file = File(context.getExternalFilesDir(null), "savedWeather.json")
             if (!file.exists()) return null
 
             val jsonString = file.readText()
-            val json = JSONObject(jsonString)
+            val jsonArray = JSONArray(jsonString)
+            val results = mutableListOf<FullWeatherData>()
 
-            val current = json.getJSONObject("current")
-            val currentTimeStr = current.optString("time")
-            val currentTimestamp = if (currentTimeStr.contains("-")) {
-                parseDateToTimestamp(currentTimeStr)
-            } else {
-                current.optLong("time")
-            }
+            for (j in 0 until jsonArray.length()) {
+                val json = jsonArray.getJSONObject(j)
 
-            val currentWeather = CurrentWeather(
-                temperature = current.getDouble("temperature_2m"),
-                apparentTemperature = current.getDouble("apparent_temperature"),
-                humidity = current.getInt("relative_humidity_2m"),
-                weatherCode = current.getInt("weather_code"),
-                isDay = current.getInt("is_day") == 1,
-                windSpeed = current.getDouble("wind_speed_10m"),
-                timestamp = currentTimestamp
-            )
-
-            // Парсим прогноз на 7 дней
-            val dailyForecast = mutableListOf<DailyForecast>()
-            val daily = json.optJSONObject("daily")
-
-            if (daily != null) {
-                val times = daily.getJSONArray("time")
-                val weatherCodes = daily.getJSONArray("weather_code")
-                val tempMax = daily.getJSONArray("temperature_2m_max")
-                val tempMin = daily.getJSONArray("temperature_2m_min")
-
-                for (i in 0 until minOf(times.length(), 7)) {
-                    val timeStr = times.optString(i)
-                    val timestamp = if (timeStr.contains("-")) {
-                        parseDateToTimestamp(timeStr)
-                    } else {
-                        times.optLong(i)
-                    }
-
-                    dailyForecast.add(
-                        DailyForecast(
-                            timestamp = timestamp,
-                            weatherCodeDay = weatherCodes.getInt(i),
-                            weatherCodeNight = weatherCodes.getInt(i), // Упрощение: один код на день
-                            tempMax = tempMax.getDouble(i),
-                            tempMin = tempMin.getDouble(i)
-                        )
-                    )
+                val current = json.getJSONObject("current")
+                val currentTimeStr = current.optString("time")
+                val currentTimestamp = if (currentTimeStr.contains("-")) {
+                    parseDateToTimestamp(currentTimeStr)
+                } else {
+                    current.optLong("time")
                 }
+
+                val currentWeather = CurrentWeather(
+                    temperature = current.getDouble("temperature_2m"),
+                    apparentTemperature = current.getDouble("apparent_temperature"),
+                    humidity = current.getInt("relative_humidity_2m"),
+                    weatherCode = current.getInt("weather_code"),
+                    isDay = current.getInt("is_day") == 1,
+                    windSpeed = current.getDouble("wind_speed_10m"),
+                    timestamp = currentTimestamp
+                )
+
+                // Парсим прогноз на 7 дней
+                val dailyForecast = mutableListOf<DailyForecast>()
+                val daily = json.optJSONObject("daily")
+
+                if (daily != null) {
+                    val times = daily.getJSONArray("time")
+                    val weatherCodes = daily.getJSONArray("weather_code")
+                    val tempMax = daily.getJSONArray("temperature_2m_max")
+                    val tempMin = daily.getJSONArray("temperature_2m_min")
+
+                    for (i in 0 until minOf(times.length(), 7)) {
+                        val timeStr = times.optString(i)
+                        val timestamp = if (timeStr.contains("-")) {
+                            parseDateToTimestamp(timeStr)
+                        } else {
+                            times.optLong(i)
+                        }
+
+                        dailyForecast.add(
+                            DailyForecast(
+                                timestamp = timestamp,
+                                weatherCodeDay = weatherCodes.getInt(i),
+                                weatherCodeNight = weatherCodes.getInt(i), // Упрощение: один код на день
+                                tempMax = tempMax.getDouble(i),
+                                tempMin = tempMin.getDouble(i)
+                            )
+                        )
+                    }
+                }
+
+                // Читаем город из JSON (поле добавляется веб-частью) или используем координаты
+                val city = json.optString("city", getCityFromCoordinates(
+                    json.getDouble("latitude"),
+                    json.getDouble("longitude")
+                ))
+
+                results.add(
+                    FullWeatherData(
+                        current = currentWeather,
+                        city = city,
+                        dailyForecast = dailyForecast
+                    )
+                )
             }
-
-            // Читаем город из настроек или используем координаты
-            val city = getCityFromCoordinates(
-                json.getDouble("latitude"),
-                json.getDouble("longitude")
-            )
-
-            FullWeatherData(
-                current = currentWeather,
-                city = city,
-                dailyForecast = dailyForecast
-            )
+            results
         } catch (e: Exception) {
             e.printStackTrace()
             null

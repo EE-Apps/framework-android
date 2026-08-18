@@ -20,13 +20,6 @@ window.pages = [
         subpagesmode: 'modal',
     },
     {
-        id: 'socials',
-        title: 'Socials',
-        icon: 'img/ui/user.svg',
-        noBottom: true,
-        leftBtn: false,
-    },
-    {
         id: 'settings',
         title: 'Настройки',
         icon: 'img/ui/settings.svg',

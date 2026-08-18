@@ -1,5 +1,6 @@
 let globalLat = null;
 let globalLon = null;
+let data = null;
 
 const weatherTypes = {
     0: {
@@ -208,15 +209,25 @@ if (currentLang === 'ru') {
 }
 const isRuLang = (currentLang == 'ru' || currentLang == 'uk' || currentLang == 'by' || currentLang == 'kz') ? true : false;
 
+function getData(n = 0) {
+    if (!data) return null;
+    const dataArray = Array.isArray(data) ? data : [data];
+    return dataArray[n];
+}
+
 /* ---------- FETCH ---------- */
 
 async function fetchFromFile() {
-    if (window.bridge.env != "Android") return
+    if (window.bridge.env != "Android") return;
 
-    return(JSON.parse(await window.bridge.readFile('savedWeather.json')))
+    const saved = JSON.parse(
+        await window.bridge.readFile('savedWeather.json')
+    );
+
+    return Array.isArray(saved) ? saved : [saved];
 }
 
-async function fetchWeather(lat, lon) {
+async function fetchWeather(lat, lon, city) {
     const url =
         `https://api.open-meteo.com/v1/forecast` +
         `?latitude=${lat}&longitude=${lon}&timeformat=unixtime` +
@@ -227,16 +238,24 @@ async function fetchWeather(lat, lon) {
         
     if (!navigator.onLine) {
         const saved = localStorage.getItem("WeatherAll");
-        return saved ? JSON.parse(saved) : null;
+        if (!saved) return null;
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [parsed];
     }
 
     try {
         const res = await fetch(url);
-        if (!res.ok) throw new Error(res.status);
-        const data = await res.json();
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        
+        let json = await res.json();
+        json.city = globalCity
+        data = Array.isArray(json) ? json : [json];
+
         localStorage.setItem("WeatherAll", JSON.stringify(data));
+
         return data;
-    } catch {
+    } catch (error) {
+        console.error("Ошибка при запросе погоды:", error);
         const saved = localStorage.getItem("WeatherAll");
         return saved ? JSON.parse(saved) : null;
     }
@@ -247,27 +266,37 @@ async function fetchWeather(lat, lon) {
 async function updateAll() {
     if (globalLat == null || globalLon == null) return;
 
-    const savedData = await fetchFromFile()
-    let data
-    if (savedData && ((new Date).getTime() - savedData.current.time * 1000 < 300000 || !navigator.onLine)) {
-        data = savedData
-        window.notification.success('saved')
+    let fetchedData;
+    const savedData = await fetchFromFile();
+    if (savedData && ((new Date()).getTime() - savedData.current.time * 1000 < 300000 || !navigator.onLine)) {
+        fetchedData = savedData;
+        if (window.notification) window.notification.success('saved');
     } else {
-        data = await fetchWeather(globalLat, globalLon)
-        window.bridge.writeFile('savedWeather.json', JSON.stringify(data, null, 2))
+        fetchedData = await fetchWeather(globalLat, globalLon, globalCity);
+        if (fetchedData && window.bridge) {
+            const weatherArray = Array.isArray(fetchedData) ? fetchedData : [fetchedData];
+
+            window.bridge.writeFile(
+                'savedWeather.json',
+                JSON.stringify(weatherArray, null, 2)
+            );
+        }
     }
-    if (!data) return
+    if (!fetchedData) return;
+
+    data = Array.isArray(fetchedData) ? fetchedData : [fetchedData];
+
+    const currentData = getData(0);
+    if (!currentData) return;
+
+    console.log(currentData);
 
     // текущая погода
-    NOWrenderCurrent(data.current, data)
+    NOWrenderCurrent(currentData.current, currentData);
 
-    renderImportantTimes(data.hourly)
-
-    renderHourly(data.hourly)
-    renderImportantTimes(data.hourly)
-
-    renderHourly(data.hourly)
-    renderDaily(data.daily)
+    renderHourly(currentData.hourly);
+    renderImportantTimes(currentData.hourly);
+    renderDaily(currentData.daily);
 }
 
 /* ---------- IMPORTANT TIMES ---------- */
@@ -349,10 +378,34 @@ function renderHourly(hourly) {
 
     container.innerHTML = "";
     const now = Date.now();
+    let previousTime = 0;
 
     hourly.time.slice(0, 59).forEach((t, i) => {
         const ts = new Date(t * 1000).getTime();
         if (ts < now) return;
+
+        function renderSunCard(what, sunTime) {
+            sunTime = sunTime * 1000
+            if (sunTime > now && sunTime > previousTime && sunTime < ts) {
+                const hour = new Date(sunTime).getHours().toString().padStart(2, "0");
+                const minute = new Date(sunTime).getMinutes().toString().padStart(2, "0");
+                const card = document.createElement("div");
+                card.className = `card time-${hour}`;
+                card.innerHTML = `
+                    <p class="c-time">${what}</p>
+                    <img class="c-img" src="img/${what}.webp">
+                    <p class="c-temp">${hour}:${minute}</p>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        getData().daily.sunrise.forEach(sunriseTime => {
+            renderSunCard("sunrise", sunriseTime)
+        })
+        getData().daily.sunset.forEach(sunsetTime => {
+            renderSunCard("sunset", sunsetTime)
+        })
 
         const hour = new Date(t * 1000).getHours().toString().padStart(2, "0");
         const day = new Date(t * 1000).getDate();
@@ -366,6 +419,7 @@ function renderHourly(hourly) {
             <p class="c-temp">${Math.round(hourly.temperature_2m[i])}°C</p>
         `;
         container.appendChild(card);
+        previousTime = ts
     });
 }
 
@@ -596,6 +650,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!city) return;
         globalLat = city.lat;
         globalLon = city.lon;
+        globalCity = city.value;
         let appSettings = JSON.parse(localStorage.getItem("appSettings"));
         appSettings.weather.townName = value;
         localStorage.setItem("appSettings", JSON.stringify(appSettings));
