@@ -27,3 +27,5 @@ include(":app")
 include(":core")
 
 include(":app-weather")
+include(":app-calc")
+include(":app-bellschedule")

@@ -15,6 +15,8 @@ class WebAppInterface(
     private val webView: WebView,
     private val scope: CoroutineScope
 ) {
+    private val fileLock = Any() // Объект блокировки для исключения гонки потоков
+
     private val appFilesDir: File?
         get() = context.getExternalFilesDir(null)
 
@@ -31,52 +33,53 @@ class WebAppInterface(
         }
     }
 
-    // ==========================================
-    // 🔧 НОВАЯ ФУНКЦИЯ: Обновление конкретного параметра
-    // ==========================================
     @JavascriptInterface
-    fun updateSetting(key: String, valueJsonOrString: String, callbackName: String) {
+    fun updateSetting(key: String, valueJsonOrString: String, fileName: String, callbackName: String) {
         scope.launch(Dispatchers.IO) {
             val base = appFilesDir ?: run {
                 safeEvaluateJs(callbackName, "false", isJson = true)
                 return@launch
             }
 
-            val file = File(base, "settings.json")
+            val targetFileName = if (fileName.isNotBlank()) fileName else "settings.json"
+            val file = File(base, targetFileName)
             var success = false
 
-            try {
-                // 1. Читаем существующие настройки или создаём пустой объект
-                val currentSettings = if (file.exists()) {
-                    val content = file.readText()
-                    if (content.isNotBlank()) JSONObject(content) else JSONObject()
-                } else {
-                    JSONObject()
-                }
+            synchronized(fileLock) {
+                try {
+                    val currentSettings = if (file.exists() && file.length() > 0) {
+                        try { JSONObject(file.readText()) } catch (e: Exception) { JSONObject() }
+                    } else {
+                        JSONObject()
+                    }
 
-                // 2. Парсим переданное значение (строка, число, boolean или JSON-объект/массив)
-                val parsedValue = try {
-                    when {
-                        valueJsonOrString == "true" || valueJsonOrString == "false" -> valueJsonOrString.toBoolean()
-                        valueJsonOrString.toIntOrNull() != null -> valueJsonOrString.toInt()
-                        valueJsonOrString.toDoubleOrNull() != null -> valueJsonOrString.toDouble()
-                        valueJsonOrString.startsWith("{") -> JSONObject(valueJsonOrString)
-                        valueJsonOrString.startsWith("[") -> JSONArray(valueJsonOrString)
+                    val trimmedVal = valueJsonOrString.trim()
+                    val parsedValue = when {
+                        trimmedVal == "true" || trimmedVal == "false" -> trimmedVal.toBoolean()
+                        trimmedVal.toIntOrNull() != null -> trimmedVal.toInt()
+                        trimmedVal.toDoubleOrNull() != null -> trimmedVal.toDouble()
+                        trimmedVal.startsWith("{") -> try { JSONObject(trimmedVal) } catch (e: Exception) { valueJsonOrString }
+                        trimmedVal.startsWith("[") -> try { JSONArray(trimmedVal) } catch (e: Exception) { valueJsonOrString }
                         else -> valueJsonOrString
                     }
+
+                    if (currentSettings.has(key) && currentSettings.get(key) is JSONObject && parsedValue is JSONObject) {
+                        val targetObj = currentSettings.getJSONObject(key)
+                        val keys = parsedValue.keys()
+                        while (keys.hasNext()) {
+                            val subKey = keys.next()
+                            targetObj.put(subKey, parsedValue.get(subKey))
+                        }
+                    } else {
+                        currentSettings.put(key, parsedValue)
+                    }
+
+                    file.parentFile?.mkdirs()
+                    file.writeText(currentSettings.toString(2))
+                    success = true
                 } catch (e: Exception) {
-                    valueJsonOrString // Если сбой парсинга, сохраняем как обычную строку
+                    e.printStackTrace()
                 }
-
-                // 3. Обновляем или добавляем поле
-                currentSettings.put(key, parsedValue)
-
-                // 4. Перезаписываем файл
-                file.parentFile?.mkdirs()
-                file.writeText(currentSettings.toString(2)) // с отступами для читаемости
-                success = true
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
 
             safeEvaluateJs(callbackName, success.toString(), isJson = true)
@@ -98,12 +101,18 @@ class WebAppInterface(
             }
 
             var success = false
-            try {
-                file.parentFile?.mkdirs()
-                file.writeText(content)
-                success = true
-            } catch (e: Exception) {
-                e.printStackTrace()
+            synchronized(fileLock) {
+                try {
+                    // Валидируем JSON перед сохранением, если сохраняется settings.json
+                    if (fileName == "settings.json") {
+                        JSONObject(content) // Выбросит исключение, если JSON невалиден
+                    }
+                    file.parentFile?.mkdirs()
+                    file.writeText(content)
+                    success = true
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
             safeEvaluateJs(callbackName, success.toString(), isJson = true)
@@ -113,9 +122,26 @@ class WebAppInterface(
     @JavascriptInterface
     fun getSettings(callbackName: String) {
         scope.launch(Dispatchers.IO) {
-            val base = appFilesDir ?: return@launch
+            val base = appFilesDir ?: run {
+                safeEvaluateJs(callbackName, "{}", isJson = true)
+                return@launch
+            }
             val file = File(base, "settings.json")
-            val jsonStr = if (file.exists()) file.readText() else "{}"
+
+            val jsonStr = synchronized(fileLock) {
+                if (file.exists() && file.length() > 0) {
+                    try {
+                        val text = file.readText()
+                        JSONObject(text) // Проверяем на валидность
+                        text
+                    } catch (e: Exception) {
+                        "{}"
+                    }
+                } else {
+                    "{}"
+                }
+            }
+
             safeEvaluateJs(callbackName, jsonStr, isJson = true)
         }
     }
@@ -148,10 +174,12 @@ class WebAppInterface(
                 return@launch
             }
 
-            val content = try {
-                file.readText()
-            } catch (e: Exception) {
-                ""
+            val content = synchronized(fileLock) {
+                try {
+                    file.readText()
+                } catch (e: Exception) {
+                    ""
+                }
             }
 
             safeEvaluateJs(callbackName, content, isJson = false)
