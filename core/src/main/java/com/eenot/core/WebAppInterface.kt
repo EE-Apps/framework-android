@@ -1,8 +1,12 @@
 package com.eenot.core
 
 import android.content.Context
+import android.content.Intent
+import android.util.Base64
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.core.content.FileProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -183,6 +187,51 @@ class WebAppInterface(
             }
 
             safeEvaluateJs(callbackName, content, isJson = false)
+        }
+    }
+
+    @JavascriptInterface
+    fun shareImage(base64Data: String) {
+        Log.d("WebAppInterface", "shareImage called, data length: ${base64Data.length}")
+        scope.launch(Dispatchers.IO) {
+            try {
+                val pureBase64 = if (base64Data.contains(",")) {
+                    base64Data.substring(base64Data.indexOf(",") + 1)
+                } else {
+                    base64Data
+                }
+
+                val decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT)
+                Log.d("WebAppInterface", "Decoded bytes: ${decodedBytes.size}")
+
+                val cachePath = File(context.cacheDir, "shared_images")
+                cachePath.mkdirs()
+                val imageFile = File(cachePath, "shared_image_${System.currentTimeMillis()}.png")
+                imageFile.writeBytes(decodedBytes)
+                Log.d("WebAppInterface", "File saved to: ${imageFile.absolutePath}")
+
+                val contentUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    imageFile
+                )
+
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_STREAM, contentUri)
+                    type = "image/png"
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                scope.launch(Dispatchers.Main) {
+                    val chooser = Intent.createChooser(shareIntent, "Share Image")
+                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(chooser)
+                    Log.d("WebAppInterface", "Share intent started")
+                }
+            } catch (e: Exception) {
+                Log.e("WebAppInterface", "Error in shareImage", e)
+            }
         }
     }
 }
