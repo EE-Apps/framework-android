@@ -7,13 +7,23 @@ window.eelib.pages = [
         icon: 'img/ui/home.svg',
         active: true,
         btns: [
-            ['edit', 'img/ui/edit2', 'test()', 'Edit'],
-            ['aod',  'img/ui/zoom',  'test()', 'Simple'],
+            ['screenshoot', 'img/ui/zoom', 'window.makeScreenshot("#now .pageContent")', 'Screenshot'],
+            ['aod', 'img/ui/zoom', 'window.changePage("aod")', 'Allway On Display'],
         ],
         subpages: [
             'lessonInfo',
         ],
         subpagesmode: 'modal',
+    },
+    {
+        id: 'aod',
+        title: 'AOD',
+        description: 'До следующего звонка',
+        icon: 'img/ui/home.svg',
+        btns: [],
+        leftBtn: 'none',
+        noBottom: true,
+        noNav: true,
     },
     {
         id: 'schedule',
@@ -22,6 +32,7 @@ window.eelib.pages = [
         btns: [
             ['search'],
             ['edit', 'img/ui/edit2', 'changePage("scheduleEdit")', 'Edit'],
+            ['screenshoot', 'img/ui/zoom', 'window.makeScreenshot("#schedule .pageContent")', 'Screenshot'],
         ],
         subcategories: ['all', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
         subcategoryActive: 'all',
@@ -50,6 +61,7 @@ window.eelib.pages = [
         btns: [
             ['search'],
             ['add', 'img/ui/add2', 'window.lessonInfoPage?.createLesson()', 'Add lesson'],
+            ['screenshoot', 'img/ui/zoom', 'window.makeScreenshot("#lessons .pageContent")', 'Screenshot'],
         ],
         subpages: [
             'lessonInfo',
@@ -63,6 +75,7 @@ window.eelib.pages = [
         // active: true,
         btns: [
             ['edit', 'img/ui/edit2', 'window.lessonInfoPage.toggleEdit()', 'Edit'],
+            ['delete', 'img/ui/cross', 'window.lessonInfoPage.deleteLesson()', 'Delete']
         ],
         noBottom: true,
         noLeft: true,
@@ -72,6 +85,7 @@ window.eelib.pages = [
         title: 'About',
         icon: 'img/ui/user.svg',
         noBottom: true,
+        noNav: true,
     },
     {
         id: 'settings',
@@ -85,11 +99,11 @@ window.eelib.settingsConfig = {
     storageKey: 'appSettings',
     defaultSettings: {
         main: {
-            lang: navigator.language.split('-')[0] || 'en'
+            lang: navigator.language.split('-')[0] || 'en',
+            theme: 'dark'
         },
         weather: {
-            town: '',
-            location: [0, 0],
+            location: [null, null],
             unit: "C",
             background: false,
             pageBackground: false,
@@ -160,6 +174,12 @@ window.eelib.settingsConfig = {
                         uk: "Українська",
                     },
                 },
+                {
+                    type: "select",
+                    key: "theme",
+                    label: "Theme",
+                    options: { "dark": "Dark", "light": "Light", "oled": "Black OLED" }
+                },
             ]
         },
         clock: {
@@ -178,15 +198,14 @@ window.eelib.settingsConfig = {
         weather: {
             title: "Weather",
             items: [
+                { type: "text", key: "latitude", label: "Latitude", placeholder: "47.0105" },
+                { type: "text", key: "longitude", label: "Longitude", placeholder: "28.8638" },
                 { type: "toggle", key: "background", label: "Weather Background" },
                 { type: "toggle", key: "pageBackground", label: "Page Background" }
             ]
         },
     },
     onChange: (settings) => {
-        // Вызывается при любом изменении настроек
-        if (typeof updateTimeDisplay === 'function') {
-        updateTimeDisplay();
-        }
+        window.weatherManager?.refresh();
     }
 }

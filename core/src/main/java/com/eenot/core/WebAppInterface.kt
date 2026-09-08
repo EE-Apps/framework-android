@@ -1,12 +1,18 @@
 package com.eenot.core
 
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.util.Base64
 import android.util.Log
+import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.core.content.FileProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,14 +21,14 @@ import org.json.JSONObject
 import java.io.File
 
 class WebAppInterface(
-    private val context: Context,
+    private val activity: Activity,
     private val webView: WebView,
     private val scope: CoroutineScope
 ) {
     private val fileLock = Any() // Объект блокировки для исключения гонки потоков
 
     private val appFilesDir: File?
-        get() = context.getExternalFilesDir(null)
+        get() = activity.getExternalFilesDir(null)
 
     private fun isPathSafe(file: File): Boolean {
         val baseDir = appFilesDir?.canonicalFile ?: return false
@@ -38,6 +44,46 @@ class WebAppInterface(
     }
 
     @JavascriptInterface
+    fun keepScreenOn(enabled: Boolean) {
+        activity.runOnUiThread {
+            if (enabled) {
+                activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun getAppInfo(callbackId: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+                val versionName = packageInfo.versionName ?: "unknown"
+                val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    packageInfo.longVersionCode.toString()
+                } else {
+                    @Suppress("DEPRECATION")
+                    packageInfo.versionCode.toString()
+                }
+
+                val info = JSONObject().apply {
+                    put("Платформа", "Android")
+                    put("Версия Android", Build.VERSION.RELEASE ?: Build.VERSION.SDK_INT.toString())
+                    put("SDK", Build.VERSION.SDK_INT)
+                    put("Устройство", "${Build.MANUFACTURER} ${Build.MODEL}")
+                    put("Версия APK", versionName)
+                    put("Код APK", versionCode)
+                }
+
+                safeEvaluateJs(callbackId, info.toString(), isJson = true)
+            } catch (e: Exception) {
+                Log.e("WebAppInterface", "Error in getAppInfo", e)
+            }
+        }
+    }
+
+    @JavascriptInterface
     fun updateSetting(key: String, valueJsonOrString: String, fileName: String, callbackName: String) {
         scope.launch(Dispatchers.IO) {
             val base = appFilesDir ?: run {
@@ -45,7 +91,7 @@ class WebAppInterface(
                 return@launch
             }
 
-            val targetFileName = if (fileName.isNotBlank()) fileName else "settings.json"
+            val targetFileName = fileName.ifBlank { "settings.json" }
             val file = File(base, targetFileName)
             var success = false
 
@@ -204,15 +250,15 @@ class WebAppInterface(
                 val decodedBytes = Base64.decode(pureBase64, Base64.DEFAULT)
                 Log.d("WebAppInterface", "Decoded bytes: ${decodedBytes.size}")
 
-                val cachePath = File(context.cacheDir, "shared_images")
+                val cachePath = File(activity.cacheDir, "shared_images")
                 cachePath.mkdirs()
                 val imageFile = File(cachePath, "shared_image_${System.currentTimeMillis()}.png")
                 imageFile.writeBytes(decodedBytes)
                 Log.d("WebAppInterface", "File saved to: ${imageFile.absolutePath}")
 
                 val contentUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
+                    activity,
+                    "${activity.packageName}.fileprovider",
                     imageFile
                 )
 
@@ -226,11 +272,47 @@ class WebAppInterface(
                 scope.launch(Dispatchers.Main) {
                     val chooser = Intent.createChooser(shareIntent, "Share Image")
                     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(chooser)
+                    activity.startActivity(chooser)
                     Log.d("WebAppInterface", "Share intent started")
                 }
             } catch (e: Exception) {
                 Log.e("WebAppInterface", "Error in shareImage", e)
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun downloadApk(url: String?) {
+        Log.d("WebAppInterface", "downloadApk called with URL: $url")
+        if (url.isNullOrBlank()) {
+            Log.w("WebAppInterface", "URL is null or blank, ignoring")
+            return
+        }
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            activity.startActivity(intent)
+            Log.d("WebAppInterface", "Intent started successfully")
+        } catch (e: Exception) {
+            Log.e("WebAppInterface", "Failed to start activity for URL: $url", e)
+        }
+    }
+
+    @JavascriptInterface
+    fun setFullscreen(enabled: Boolean) {
+        scope.launch(Dispatchers.Main) {
+            val window = activity.window
+            val controller = WindowCompat.getInsetsController(window, window.decorView)
+
+            if (enabled) {
+                // Прячем строку состояния и навигацию
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+                // Позволяем вызывать их свайпом (они будут поверх контента и пропадут сами)
+                controller.systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                // Возвращаем всё назад
+                controller.show(WindowInsetsCompat.Type.systemBars())
             }
         }
     }

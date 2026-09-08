@@ -3,24 +3,27 @@ package com.eenot.bellschedule
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.ViewCompat
-import com.eenot.core.BaseWebViewActivity
 import com.eenot.bellschedule.ui.theme.BellScheduleTheme
+import com.eenot.core.BaseWebViewActivity
 
 class ScheduleMainActivity : BaseWebViewActivity() {
+
+    // Кэшируем актуальные отступы
+    private var cachedTopDp: Float = 0f
+    private var cachedBottomDp: Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Включаем Edge-to-Edge и отключаем принудительную подгонку окон системой
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -31,26 +34,28 @@ class ScheduleMainActivity : BaseWebViewActivity() {
                     factory = { context ->
                         (webView.parent as? ViewGroup)?.removeView(webView)
 
-                        // 2. Слушаем отступы Android и инжектим их в CSS-переменные WebView
+                        // 1. Учитываем вырезы экрана (Cutout) + Статус-бар
                         ViewCompat.setOnApplyWindowInsetsListener(webView) { _, insets ->
-                            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-                            val navigationBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                            val systemBars = insets.getInsets(
+                                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+                            )
 
                             val density = context.resources.displayMetrics.density
-                            val topDp = statusBarHeight / density
-                            val bottomDp = navigationBarHeight / density
+                            cachedTopDp = systemBars.top / density
+                            cachedBottomDp = systemBars.bottom / density
 
-                            // Передаем значения в root DOM
-                            val js = """
-                                document.documentElement.style.setProperty('--safe-area-top', '${topDp}px');
-                                document.documentElement.style.setProperty('--safe-area-bottom', '${bottomDp}px');
-                            """.trimIndent()
+                            applySafeAreaToWebView(webView)
 
-                            webView.evaluateJavascript(js, null)
-
-                            // Игнорируем вкладывание отступов контейнером Android,
-                            // чтобы WebView остался физически на весь экран
                             WindowInsetsCompat.CONSUMED
+                        }
+
+                        // 2. Инжектим отступы ПОВТОРНО при каждом успешном рендере страницы
+                        val originalClient = webView.webViewClient
+                        webView.webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                originalClient?.onPageFinished(view, url)
+                                applySafeAreaToWebView(view)
+                            }
                         }
 
                         webView
@@ -58,6 +63,19 @@ class ScheduleMainActivity : BaseWebViewActivity() {
                 )
             }
         }
+    }
+
+    private fun applySafeAreaToWebView(targetWebView: WebView?) {
+        if (targetWebView == null || cachedTopDp == 0f) return
+
+        val js = """
+            (function() {
+                document.documentElement.style.setProperty('--safe-area-top', '${cachedTopDp}px');
+                document.documentElement.style.setProperty('--safe-area-bottom', '${cachedBottomDp}px');
+            })();
+        """.trimIndent()
+
+        targetWebView.evaluateJavascript(js, null)
     }
 
     override fun getTrustedHosts(): List<String> {

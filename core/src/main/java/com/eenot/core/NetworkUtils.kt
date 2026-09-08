@@ -22,6 +22,7 @@ object NetworkUtils {
 
     private fun isUrlReachable(urlStr: String): Boolean {
         if (urlStr.startsWith("file://")) return true
+        if (urlStr.contains("appassets.androidplatform.net")) return true
 
         var connection: HttpURLConnection? = null
         return try {

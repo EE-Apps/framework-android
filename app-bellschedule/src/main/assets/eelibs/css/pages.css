@@ -88,7 +88,7 @@
     position: sticky;
     top: 0;
     padding: var(--ds);
-    background-color: var(--bg-pri-great);
+    background-color: var(--bg-base);
     z-index: 50;
 
     button {
@@ -101,6 +101,7 @@
         top: 3rem;
         right: var(--dss);
         display: none;
+        flex-direction: column;
         border-radius: var(--br);
         background-color: var(--bg-sec-great);
         min-width: 0;
@@ -195,7 +196,7 @@
         }
 
         .pageContainer {
-            background-color: var(--bg-pri-great);
+            background-color: var(--bg-base);
             padding: 0 var(--ds) var(--ds) var(--ds);
 			height: max-content;
             min-height: calc(100% - var(--ds)); 

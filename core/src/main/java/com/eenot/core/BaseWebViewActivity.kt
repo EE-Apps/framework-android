@@ -9,6 +9,7 @@ import android.webkit.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -108,7 +109,28 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
 
         val hardcodedTrusted = getTrustedHosts()
 
+        val assetLoader = WebViewAssetLoader.Builder()
+            .setDomain("appassets.androidplatform.net")
+            .setHttpAllowed(true)
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
+
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                val url = request.url
+                if (url.host == "appassets.androidplatform.net") {
+                    val response = assetLoader.shouldInterceptRequest(url)
+                    if (response == null) {
+                        Log.w("Core", "AssetLoader returned null for: $url")
+                    }
+                    return response
+                }
+                return null
+            }
+
             override fun shouldOverrideUrlLoading(
                 view: WebView, request: WebResourceRequest
             ): Boolean {
@@ -118,10 +140,11 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
                 // Проверяем: 
                 // 1. Входит ли URL в хардкод
                 // 2. Входит ли хост в динамический список из настроек
-                // 3. Является ли это локальным файлом
+                // 3. Является ли это локальным файлом или внутренним доменом ассетов
                 val isTrusted = hardcodedTrusted.any { url.contains(it.lowercase()) } || 
                                 dynamicTrustedHosts.any { host.contains(it) || it.contains(host) } ||
-                                url.startsWith("file://")
+                                url.startsWith("file://") ||
+                                host == "appassets.androidplatform.net"
 
                 if (isTrusted) {
                     return false
@@ -175,7 +198,7 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
                 settingsFile.writeText(assetJsonString)
             } else {
                 // Пытаемся прочитать. Если EACCES - это критическая ошибка доступа к файлу.
-                val content = try {
+                var content = try {
                     settingsFile.readText()
                 } catch (e: Exception) {
                     Log.e("Core", "Не удалось прочитать файл (EACCES?). Пробуем пересоздать.", e)
@@ -191,6 +214,17 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
                 }
 
                 if (content == null) return
+
+                // Миграция: заменяем старые file:///android_asset/ на новый домен
+                if (content.contains("file:///android_asset/")) {
+                    Log.d("Core", "Миграция старых file:///android_asset/ ссылок в settings.json")
+                    content = content.replace("file:///android_asset/", "https://appassets.androidplatform.net/assets/")
+                    try {
+                        settingsFile.writeText(content)
+                    } catch (e: Exception) {
+                        Log.e("Core", "Ошибка при записи миграции", e)
+                    }
+                }
 
                 val currentJson = try { JSONObject(content) } catch (e: Exception) { JSONObject() }
                 
@@ -235,7 +269,14 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 if (availableUrl != null) {
-                    webView.loadUrl(availableUrl)
+                    // Исправление: если URL указывает на корень ассетов, добавляем index.html
+                    val finalUrl = if (availableUrl == "https://appassets.androidplatform.net/assets/" || 
+                        availableUrl == "https://appassets.androidplatform.net/assets") {
+                        "https://appassets.androidplatform.net/assets/index.html"
+                    } else {
+                        availableUrl
+                    }
+                    webView.loadUrl(finalUrl)
                 } else {
                     showOfflineScreen()
                 }
